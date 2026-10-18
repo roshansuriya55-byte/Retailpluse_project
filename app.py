@@ -194,10 +194,10 @@ if page == "Overview":
     left, right = st.columns(2)
     with left:
         monthly = monthly_series(filtered)
-        st.plotly_chart(px.line(monthly, x="Date", y="Revenue", markers=True, title="Monthly revenue trend"), use_container_width=True)
+        st.plotly_chart(px.line(monthly, x="Date", y="Revenue", markers=True, title="Monthly revenue trend"), width="stretch")
     with right:
         top = filtered.groupby("Description", dropna=False)["Revenue"].sum().nlargest(10).reset_index()
-        st.plotly_chart(px.bar(top, x="Revenue", y="Description", orientation="h", title="Top 10 products by revenue"), use_container_width=True)
+        st.plotly_chart(px.bar(top, x="Revenue", y="Description", orientation="h", title="Top 10 products by revenue"), width="stretch")
     st.markdown("### Available modules")
     st.write("Sales analysis, RFM customer segmentation, baseline time-series forecasting, inventory recommendations and a 12-step project workflow.")
     st.caption("The workbook is historical transaction data. It does not contain real stock-on-hand or an explicit churn label; inventory and churn-risk outputs are estimates/proxies.")
@@ -208,19 +208,19 @@ elif page == "1 · Sales Dashboard":
     c1,c2 = st.columns(2)
     monthly = monthly_series(filtered)
     with c1:
-        st.plotly_chart(px.line(monthly, x="Date", y="Revenue", markers=True, title="Monthly revenue"), use_container_width=True)
+        st.plotly_chart(px.line(monthly, x="Date", y="Revenue", markers=True, title="Monthly revenue"), width="stretch")
     with c2:
         country_rev = filtered.groupby("Country")["Revenue"].sum().nlargest(12).sort_values().reset_index()
-        st.plotly_chart(px.bar(country_rev, x="Revenue", y="Country", orientation="h", title="Top countries by revenue"), use_container_width=True)
+        st.plotly_chart(px.bar(country_rev, x="Revenue", y="Country", orientation="h", title="Top countries by revenue"), width="stretch")
     c3,c4 = st.columns(2)
     with c3:
         product_rev = filtered.groupby("Description")["Revenue"].sum().nlargest(10).sort_values().reset_index()
-        st.plotly_chart(px.bar(product_rev, x="Revenue", y="Description", orientation="h", title="Top products"), use_container_width=True)
+        st.plotly_chart(px.bar(product_rev, x="Revenue", y="Description", orientation="h", title="Top products"), width="stretch")
     with c4:
         day = filtered.groupby("DayOfWeek")["Revenue"].sum().reindex(["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]).dropna().reset_index()
-        st.plotly_chart(px.bar(day, x="DayOfWeek", y="Revenue", title="Revenue by day of week"), use_container_width=True)
+        st.plotly_chart(px.bar(day, x="DayOfWeek", y="Revenue", title="Revenue by day of week"), width="stretch")
     st.markdown("#### Sales data preview")
-    st.dataframe(filtered[["Invoice","InvoiceDate","Customer ID","Description","Quantity","Price","Revenue","Country"]].head(100), use_container_width=True)
+    st.dataframe(filtered[["Invoice","InvoiceDate","Customer ID","Description","Quantity","Price","Revenue","Country"]].head(100), width="stretch")
 
 elif page == "2 · Customer Dashboard":
     st.subheader("2 · Customer Dashboard")
@@ -237,11 +237,11 @@ elif page == "2 · Customer Dashboard":
         left,right = st.columns(2)
         with left:
             seg = rfm_filtered.groupby("Segment").size().reset_index(name="Customers")
-            st.plotly_chart(px.pie(seg, names="Segment", values="Customers", title="RFM customer segments"), use_container_width=True)
+            st.plotly_chart(px.pie(seg, names="Segment", values="Customers", title="RFM customer segments"), width="stretch")
         with right:
-            st.plotly_chart(px.scatter(rfm_filtered, x="Frequency", y="Monetary", color="Segment", size="Avg_Order_Value", hover_data=["Customer ID","Recency"], title="Customer value map"), use_container_width=True)
+            st.plotly_chart(px.scatter(rfm_filtered, x="Frequency", y="Monetary", color="Segment", size="Avg_Order_Value", hover_data=["Customer ID","Recency"], title="Customer value map"), width="stretch")
         st.markdown("#### Customer RFM table")
-        st.dataframe(rfm_filtered.sort_values("Monetary", ascending=False), use_container_width=True)
+        st.dataframe(rfm_filtered.sort_values("Monetary", ascending=False), width="stretch")
         st.caption("Segments are derived from recency, purchase frequency and monetary value. 'At Risk' is an RFM heuristic, not a verified churn label.")
 
 elif page == "3 · Forecast Dashboard":
@@ -258,14 +258,14 @@ elif page == "3 · Forecast Dashboard":
         a.metric("History months", f"{len(hist):,}")
         b.metric("Forecast horizon", f"{len(fut)} months")
         c.metric(f"Forecast total ({metric})", f"{fut[metric].sum():,.0f}")
-        st.plotly_chart(px.line(forecast_df, x="Date", y=metric, color="Type", markers=True, title=f"Historical and {horizon}-month {metric.lower()} forecast"), use_container_width=True)
+        st.plotly_chart(px.line(forecast_df, x="Date", y=metric, color="Type", markers=True, title=f"Historical and {horizon}-month {metric.lower()} forecast"), width="stretch")
         if validation:
             st.markdown("#### Chronological holdout validation")
             a,b = st.columns(2)
             a.metric("MAE", f"{validation['MAE']:,.2f}")
             b.metric("RMSE", f"{validation['RMSE']:,.2f}")
             st.caption("Baseline model: Random Forest with calendar and lag features. These scores are a simple time-ordered holdout, not a guarantee of future accuracy.")
-        st.dataframe(forecast_df, use_container_width=True)
+        st.dataframe(forecast_df, width="stretch")
 
 elif page == "4 · Inventory Dashboard":
     st.subheader("4 · Inventory Dashboard")
@@ -292,11 +292,11 @@ elif page == "4 · Inventory Dashboard":
     left,right = st.columns(2)
     with left:
         top = inv.nlargest(15,"Suggested_Reorder_Qty").sort_values("Suggested_Reorder_Qty")
-        st.plotly_chart(px.bar(top, x="Suggested_Reorder_Qty", y="Description", orientation="h", title="Top suggested replenishment quantities"), use_container_width=True)
+        st.plotly_chart(px.bar(top, x="Suggested_Reorder_Qty", y="Description", orientation="h", title="Top suggested replenishment quantities"), width="stretch")
     with right:
         pr = inv.groupby("Priority").size().reset_index(name="Products")
-        st.plotly_chart(px.pie(pr, names="Priority", values="Products", title="Replenishment priority (estimated)"), use_container_width=True)
-    st.dataframe(inv.sort_values(["Priority","Suggested_Reorder_Qty"], ascending=[True,False]), use_container_width=True)
+        st.plotly_chart(px.pie(pr, names="Priority", values="Products", title="Replenishment priority (estimated)"), width="stretch")
+    st.dataframe(inv.sort_values(["Priority","Suggested_Reorder_Qty"], ascending=[True,False]), width="stretch")
     st.download_button("Download inventory recommendations CSV", inv.to_csv(index=False).encode("utf-8"), "retailpulse_inventory_recommendations.csv", "text/csv")
 
 elif page == "12-Step Workflow":
